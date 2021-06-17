@@ -5,33 +5,24 @@ import Container from "@material-ui/core/Container";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 import { useForm, Controller } from "react-hook-form";
+import TableBody from "@material-ui/core/TableBody";
+import TableCell from "@material-ui/core/TableCell";
+import TableHead from "@material-ui/core/TableHead";
+import TableRow from "@material-ui/core/TableRow";
+import useSWR, { mutate } from "swr";
 
 export default function Home() {
   const { control, handleSubmit } = useForm();
-  const [state, setState] = useState([]);
-
-  async function getData() {
-    const res = await fetch(`/api`);
-    const data = await res.json();
-    console.log(data);
-    setState(data);
-  }
-  useEffect(() => {
-    getData();
-  }, []);
-  console.log(state);
+  const { data } = useSWR(`/api`, (url) =>
+    fetch(url).then((res) => res.json())
+  );
 
   async function submit(data) {
-    const res = await fetch("/api", {
+    await fetch("/api", {
       body: JSON.stringify(data),
       method: "POST",
     });
-    const response = await res.json();
-    console.log(response);
-    setState((prevState) => {
-      prevState.push(response);
-      return [...prevState];
-    });
+    mutate("/api");
   }
   return (
     <div>
@@ -89,13 +80,26 @@ export default function Home() {
                     >
                       Lagre
                     </Button>
-                    {state.map((data, index) => (
-                      <Fragment key={index}>
-                        <h5>Test1: {data.test1},</h5>
-                        <h5>Test2: {data.test2},</h5>
-                        <h5>Test3: {data.test3}</h5>
-                      </Fragment>
-                    ))}
+                    {data ? (
+                      <>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell align="right">Test1</TableCell>
+                            <TableCell align="right">Test2</TableCell>
+                            <TableCell align="right">Test3</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {data.map((row) => (
+                            <TableRow key={row.id}>
+                              <TableCell align="right">{row.test1}</TableCell>
+                              <TableCell align="right">{row.test2}</TableCell>
+                              <TableCell align="right">{row.test3}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </>
+                    ) : null}
                   </Grid>
                 </form>
               </Container>

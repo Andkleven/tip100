@@ -44,7 +44,7 @@ export default function handler(req, res) {
         })
       )
       .then((ret) => {
-        res.status(200).json({ ...ret.data, id: ret.ref.id });
+        res.status(200).json(ret);
       })
       .catch((e) => res.status(400).json(e));
   } else {
